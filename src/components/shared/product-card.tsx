@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FC } from "react";
 import { Button, Title } from "../ui";
 import { Plus } from "lucide-react";
+import Image from "next/image";
 
 interface Props {
     id: number;
@@ -22,7 +23,7 @@ export const ProductCard: FC<Props> = ({
         <div className={className}>
             <Link href={`/product/${id}`}>
                 <div className="group flex justify-center py-6 px-9 bg-secondary rounded-lg h-[260px]">
-                    <img
+                    <Image
                         className="-translate-y-1 group-hover:translate-y-0 transition-all duration-200"
                         src={imageUrl}
                         alt={name}
