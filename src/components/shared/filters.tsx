@@ -1,13 +1,23 @@
+"use client";
+
 import { FC } from "react";
 import { Input, RangeSlider, Title } from "../ui";
 import { FilterCheckbox } from ".";
 import { CheckboxFiltersGroup } from "./checkbox-filters-group";
+import { useFilterIngredients } from "@/hooks/useFilterIngredients";
 
 interface Props {
     className?: string;
 }
 
 export const Filters: FC<Props> = ({ className }) => {
+    const { ingredients, loadig } = useFilterIngredients();
+
+    const items = ingredients.map((ingredient) => ({
+        text: ingredient.name,
+        value: String(ingredient.id),
+    }));
+
     return (
         <div className={className}>
             <Title text="Фильтрация" className="mb-5 font-bold" />
@@ -44,82 +54,9 @@ export const Filters: FC<Props> = ({ className }) => {
                 title="Фильтрация"
                 className="mt-5"
                 limit={6}
-                defaultItems={[
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                ]}
-                items={[
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                    { value: "1", text: "Можно собирать" },
-                    { value: "2", text: "Новинки" },
-                    { value: "3", text: "Можно собирать" },
-                ]}
+                defaultItems={items.slice(0, 6)}
+                items={items}
+                loading={loadig}
             />
         </div>
     );

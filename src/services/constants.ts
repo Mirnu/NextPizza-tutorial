@@ -5,4 +5,7 @@ export const ApiRoutes = {
             name: "/products/search",
         },
     },
+    ingredients: {
+        name: "/ingredients",
+    },
 };
