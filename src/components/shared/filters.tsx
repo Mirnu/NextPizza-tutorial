@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Input, RangeSlider, Title } from "../ui";
 import { FilterCheckbox } from ".";
 import { CheckboxFiltersGroup } from "./checkbox-filters-group";
@@ -10,13 +10,31 @@ interface Props {
     className?: string;
 }
 
+interface PriceProps {
+    priceFrom: number;
+    priceTo: number;
+}
+
 export const Filters: FC<Props> = ({ className }) => {
-    const { ingredients, loadig } = useFilterIngredients();
+    const { ingredients, loading, onAddId, selectedIds } =
+        useFilterIngredients();
+
+    const [prices, setPrice] = useState<PriceProps>({
+        priceFrom: 0,
+        priceTo: 1000,
+    });
 
     const items = ingredients.map((ingredient) => ({
         text: ingredient.name,
         value: String(ingredient.id),
     }));
+
+    const updatePrice = (name: keyof PriceProps, value: number) => {
+        setPrice({
+            ...prices,
+            [name]: value,
+        });
+    };
 
     return (
         <div className={className}>
@@ -38,16 +56,35 @@ export const Filters: FC<Props> = ({ className }) => {
                         min={0}
                         max={1000}
                         defaultValue={0}
+                        value={prices.priceFrom}
+                        onChange={(e) =>
+                            updatePrice("priceFrom", e.target.valueAsNumber)
+                        }
                     />
                     <Input
                         type="number"
                         placeholder="1000"
                         min={100}
                         max={1000}
+                        value={prices.priceTo}
+                        onChange={(e) =>
+                            updatePrice("priceTo", e.target.valueAsNumber)
+                        }
                     />
                 </div>
                 {/* Фильтр ингредиентов */}
-                <RangeSlider min={0} max={1000} step={10} value={[0, 1000]} />
+                <RangeSlider
+                    min={0}
+                    max={1000}
+                    step={10}
+                    value={[
+                        isNaN(prices.priceFrom) ? 0 : prices.priceFrom,
+                        isNaN(prices.priceTo) ? 0 : prices.priceTo,
+                    ]}
+                    onValueChange={([priceFrom, priceTo]) =>
+                        setPrice({ priceFrom, priceTo })
+                    }
+                />
             </div>
 
             <CheckboxFiltersGroup
@@ -56,7 +93,10 @@ export const Filters: FC<Props> = ({ className }) => {
                 limit={6}
                 defaultItems={items.slice(0, 6)}
                 items={items}
-                loading={loadig}
+                loading={loading}
+                onClickCheckbox={onAddId}
+                selectedIds={selectedIds}
+                name="ingredients"
             />
         </div>
     );
