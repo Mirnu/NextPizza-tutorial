@@ -1,27 +1,47 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Input, RangeSlider, Title } from "../ui";
-import { FilterCheckbox } from ".";
 import { CheckboxFiltersGroup } from "./checkbox-filters-group";
 import { useFilterIngredients } from "@/hooks/useFilterIngredients";
+import { useSet } from "react-use";
+import qs from "qs";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Props {
     className?: string;
 }
 
 interface PriceProps {
-    priceFrom: number;
-    priceTo: number;
+    priceFrom?: number;
+    priceTo?: number;
+}
+
+interface QueryParams extends PriceProps {
+    pizzaTypes: string;
+    sizes: string;
+    ingredients: string;
 }
 
 export const Filters: FC<Props> = ({ className }) => {
-    const { ingredients, loading, onAddId, selectedIds } =
+    const params = useSearchParams() as unknown as Map<
+        keyof QueryParams,
+        string
+    >;
+    const router = useRouter();
+    const { ingredients, loading, onAddId, selectedIngredients } =
         useFilterIngredients();
 
+    const [sizes, { toggle: toggleSizes }] = useSet(
+        new Set<string>(params.get("sizes")?.split(",") ?? [])
+    );
+    const [pizzaTypes, { toggle: togglePizzaTypes }] = useSet(
+        new Set<string>(params.get("pizzaTypes")?.split(",") ?? [])
+    );
+
     const [prices, setPrice] = useState<PriceProps>({
-        priceFrom: 0,
-        priceTo: 1000,
+        priceFrom: Number(params.get("priceFrom")) ?? undefined,
+        priceTo: Number(params.get("priceTo")) ?? undefined,
     });
 
     const items = ingredients.map((ingredient) => ({
@@ -36,15 +56,51 @@ export const Filters: FC<Props> = ({ className }) => {
         });
     };
 
+    useEffect(() => {
+        const filters = {
+            ...prices,
+            pizzaTypes: Array.from(pizzaTypes),
+            sizes: Array.from(sizes),
+            ingredients: Array.from(selectedIngredients),
+        };
+
+        const query = qs.stringify(filters, {
+            arrayFormat: "comma",
+        });
+        router.push(`?${query}`, { scroll: false });
+    }, [prices, pizzaTypes, sizes, selectedIngredients, router]);
+
     return (
         <div className={className}>
             <Title text="Фильтрация" className="mb-5 font-bold" />
 
             {/* Верхние чекбоксы */}
-            <div className="flex flex-col gap-4">
-                <FilterCheckbox text="Можно собирать" value="1" />
-                <FilterCheckbox text="Новинки" value="2" />
-            </div>
+            <CheckboxFiltersGroup
+                name="pizzaTypes"
+                title="Тип теста"
+                className="mb-5"
+                loading={loading}
+                onClickCheckbox={togglePizzaTypes}
+                selected={pizzaTypes}
+                items={[
+                    { text: "Тонкое", value: "1" },
+                    { text: "Традиционное", value: "2" },
+                ]}
+            />
+
+            <CheckboxFiltersGroup
+                name="sizes"
+                title="Размеры"
+                className="mb-5"
+                loading={loading}
+                onClickCheckbox={toggleSizes}
+                selected={sizes}
+                items={[
+                    { text: "20 см", value: "20" },
+                    { text: "30 см", value: "30" },
+                    { text: "40 см", value: "40" },
+                ]}
+            />
 
             {/* Фильтр цен */}
             <div className="mt-5 border-y border-neutral-100 pt-6 pb-7">
@@ -56,7 +112,7 @@ export const Filters: FC<Props> = ({ className }) => {
                         min={0}
                         max={1000}
                         defaultValue={0}
-                        value={prices.priceFrom}
+                        value={prices?.priceFrom}
                         onChange={(e) =>
                             updatePrice("priceFrom", e.target.valueAsNumber)
                         }
@@ -66,7 +122,7 @@ export const Filters: FC<Props> = ({ className }) => {
                         placeholder="1000"
                         min={100}
                         max={1000}
-                        value={prices.priceTo}
+                        value={prices?.priceTo}
                         onChange={(e) =>
                             updatePrice("priceTo", e.target.valueAsNumber)
                         }
@@ -78,8 +134,12 @@ export const Filters: FC<Props> = ({ className }) => {
                     max={1000}
                     step={10}
                     value={[
-                        isNaN(prices.priceFrom) ? 0 : prices.priceFrom,
-                        isNaN(prices.priceTo) ? 0 : prices.priceTo,
+                        !prices?.priceFrom || isNaN(prices.priceFrom)
+                            ? 0
+                            : prices.priceFrom,
+                        !prices?.priceTo || isNaN(prices.priceTo)
+                            ? 1000
+                            : prices.priceTo,
                     ]}
                     onValueChange={([priceFrom, priceTo]) =>
                         setPrice({ priceFrom, priceTo })
@@ -91,11 +151,19 @@ export const Filters: FC<Props> = ({ className }) => {
                 title="Фильтрация"
                 className="mt-5"
                 limit={6}
-                defaultItems={items.slice(0, 6)}
+                defaultItems={[...items]
+                    .sort(({ value: value1 }, { value: value2 }) =>
+                        selectedIngredients.has(value1)
+                            ? selectedIngredients.has(value2)
+                                ? 0
+                                : -1
+                            : 0
+                    )
+                    .slice(0, 6)}
                 items={items}
                 loading={loading}
                 onClickCheckbox={onAddId}
-                selectedIds={selectedIds}
+                selected={selectedIngredients}
                 name="ingredients"
             />
         </div>
