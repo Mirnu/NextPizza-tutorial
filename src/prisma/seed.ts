@@ -96,13 +96,11 @@ async function up() {
             generateProductItem(pizza2.id, 2, 40),
             generateProductItem(pizza3.id, 1, 20),
             generateProductItem(pizza3.id, 2, 30),
-            generateProductItem(pizza3.id, 2, 40),
+            ...Array.from({ length: 17 }, (_, i) => i + 1).map((i) =>
+                generateProductItem(i)
+            ),
         ],
     });
-
-    for (let i = 1; i < 17; i++) {
-        generateProductItem(i);
-    }
 
     await prisma.cart.createMany({
         data: [
