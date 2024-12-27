@@ -1,74 +1,40 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { Input, RangeSlider, Title } from "../ui";
 import { CheckboxFiltersGroup } from "./checkbox-filters-group";
-import { useFilterIngredients } from "@/hooks/useFilterIngredients";
-import { useSet } from "react-use";
-import qs from "qs";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useFilters, useIngredients, useQueryFilters } from "@/hooks";
 
 interface Props {
     className?: string;
 }
 
-interface PriceProps {
-    priceFrom?: number;
-    priceTo?: number;
-}
-
-interface QueryParams extends PriceProps {
-    pizzaTypes: string;
-    sizes: string;
-    ingredients: string;
-}
-
 export const Filters: FC<Props> = ({ className }) => {
-    const params = useSearchParams() as unknown as Map<
-        keyof QueryParams,
-        string
-    >;
-    const router = useRouter();
-    const { ingredients, loading, onAddId, selectedIngredients } =
-        useFilterIngredients();
+    const { ingredients, loading } = useIngredients();
 
-    const [sizes, { toggle: toggleSizes }] = useSet(
-        new Set<string>(params.get("sizes")?.split(",") ?? [])
-    );
-    const [pizzaTypes, { toggle: togglePizzaTypes }] = useSet(
-        new Set<string>(params.get("pizzaTypes")?.split(",") ?? [])
-    );
+    const {
+        pizzaTypes,
+        togglePizzaTypes,
+        sizes,
+        toggleSizes,
+        selectedIngredients,
+        onAddId,
+        prices,
+        updatePrice,
+        setPrice,
+    } = useFilters();
 
-    const [prices, setPrice] = useState<PriceProps>({
-        priceFrom: Number(params.get("priceFrom")) ?? undefined,
-        priceTo: Number(params.get("priceTo")) ?? undefined,
+    useQueryFilters({
+        ...prices,
+        pizzaTypes: pizzaTypes,
+        sizes: sizes,
+        ingredients: selectedIngredients,
     });
 
     const items = ingredients.map((ingredient) => ({
         text: ingredient.name,
         value: String(ingredient.id),
     }));
-
-    const updatePrice = (name: keyof PriceProps, value: number) => {
-        setPrice({
-            ...prices,
-            [name]: value,
-        });
-    };
-
-    useEffect(() => {
-        const filters = {
-            ...prices,
-            pizzaTypes: Array.from(pizzaTypes),
-            sizes: Array.from(sizes),
-            ingredients: Array.from(selectedIngredients),
-        };
-
-        const query = qs.stringify(filters, {
-            arrayFormat: "comma",
-        });
-        router.push(`?${query}`, { scroll: false });
-    }, [prices, pizzaTypes, sizes, selectedIngredients, router]);
 
     return (
         <div className={className}>

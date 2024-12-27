@@ -16,7 +16,7 @@ export const TopBar: FC<Props> = ({ className }) => {
                 className
             )}
         >
-            <Container>
+            <Container className="flex items-center gap-5">
                 <Categories />
                 <SortPopup />
             </Container>
